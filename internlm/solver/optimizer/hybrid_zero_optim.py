@@ -245,6 +245,7 @@ class HybridZeroOptimizer(BaseOptimizer):
         param_list = param_group["params"]
 
         sorted_params = sorted(param_list, key=lambda x: x.numel(), reverse=True)
+        
         for i, param in enumerate(sorted_params):
             global_id = str(i)
             for j in range(len(param.size())):

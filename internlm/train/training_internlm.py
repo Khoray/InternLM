@@ -180,7 +180,7 @@ def initialize_optimizer(model: Union[nn.Module, nn.ModuleList]):
         param_bcast_sync_handler = None
 
     adam_cfg = gpc.config.adam
-    params = create_param_groups(model, adam_cfg.weight_decay)
+    params = create_param_groups(model, adam_cfg.weight_decay, logger, adam_cfg.lr)
     naive_optimizer = torch.optim.AdamW(
         params=params,
         lr=adam_cfg.lr,
@@ -281,7 +281,6 @@ def get_validation_data_loader(
     num_worker: int = 0, dataset_generate_func: Callable = None, val_collate_fn=None, dataloader_func=None
 ):
     """Generate and return the validation data loader."""
-
     data_cfg = gpc.config.data
 
     if not data_cfg.valid_folder:

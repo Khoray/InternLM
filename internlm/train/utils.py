@@ -82,32 +82,34 @@ def create_param_groups(model, weight_decay, logger, lr):
     resampler_name, resampler_params = [], []
     for name, param in model.named_parameters():
         if param.requires_grad:
-            if 'vit' in name:
-                if free_all_vit:
-                    learn_name.append(name)
-                    learn_params.append(param)
-                else:
-                    if 'blocks' in name and int(name.split('.')[3]) >= pts:
-                        learn_name.append(name)
-                        learn_params.append(param)
-                    else:
-                        param.requires_grad = False
-            elif 'qformer' in name or 'fc_proj' in name or 'flag_image' in name:
-                resampler_name.append(name)
-                resampler_params.append(param)
-            else:
-                if not fix_llm:
-                    learn_name.append(name)
-                    learn_params.append(param)
+            # if 'vit' in name:
+            #     if free_all_vit:
+            #         learn_name.append(name)
+            #         learn_params.append(param)
+            #     else:
+            #         if 'blocks' in name and int(name.split('.')[3]) >= pts:
+            #             learn_name.append(name)
+            #             learn_params.append(param)
+            #         else:
+            #             param.requires_grad = False
+            # elif 'qformer' in name or 'fc_proj' in name or 'flag_image' in name:
+            #     resampler_name.append(name)
+            #     resampler_params.append(param)
+            # else:
+            #     if not fix_llm:
+            #         learn_name.append(name)
+            #         learn_params.append(param)
+            learn_params.append(param)
+            learn_name.append(name)
 
-    if gpc.is_rank_for_log():
-        logger.info(f'learned parameters: {len(learn_params)}, resampler parameters: {len(resampler_params)}')
+    # if gpc.is_rank_for_log():
+    #     logger.info(f'learned parameters: {len(learn_params)}, resampler parameters: {len(resampler_params)}')
 
-    llm_lr_ration = gpc.config.get('llm_lr_ration', 1.0)
-    if llm_lr_ration == 1.0:
-        learn_params.extend(resampler_params)
-        parameters = {"params": learn_params, "name": "default", "weight_decay": weight_decay}
-    else:
-        parameters = [{"params": learn_params, "name": "default", "weight_decay": weight_decay, "lr": lr*llm_lr_ration},
-                      {"params": resampler_params, "name": "resampler", "weight_decay": weight_decay, "lr": lr}]
-    return split_params_into_different_groups_for_optimizer(parameters)
+    # llm_lr_ration = gpc.config.get('llm_lr_ration', 1.0)
+    # if llm_lr_ration == 1.0:
+    #     learn_params.extend(resampler_params)
+    #     parameters = {"params": learn_params, "name": "default", "weight_decay": weight_decay}
+    # else:
+    #     parameters = [{"params": learn_params, "name": "default", "weight_decay": weight_decay, "lr": lr*llm_lr_ration},
+    #                   {"params": resampler_params, "name": "resampler", "weight_decay": weight_decay, "lr": lr}]
+    return split_params_into_different_groups_for_optimizer({"params": learn_params, "name": "default", "weight_decay": weight_decay})
